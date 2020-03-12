@@ -64,8 +64,6 @@ public class PlaceholderFragment extends Fragment implements OnMapReadyCallback 
             Bundle savedInstanceState) {
         if (getArguments().getInt(ARG_SECTION_NUMBER) == 1){
             View rootView = inflater.inflate(R.layout.activity_maps, container, false);
-//            FragmentManager fragmentManager = myContext.getSupportFragmentManager();
-
             SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager()
                     .findFragmentById(R.id.map);
             mapFragment.getMapAsync(this);
@@ -78,7 +76,6 @@ public class PlaceholderFragment extends Fragment implements OnMapReadyCallback 
         else {
             View rootView = inflater.inflate(R.layout.activity_maps, container, false);
             TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-//            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
             return rootView;
         }
     }
@@ -88,15 +85,21 @@ public class PlaceholderFragment extends Fragment implements OnMapReadyCallback 
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng malangIdn = new LatLng(-7.966620, 112.632629);
-        LatLng blitarIdn = new LatLng(-8.101460, 112.167679);
         LatLng lamonganIdn = new LatLng(-7.112340, 112.417419);
+        LatLng blitarIdn = new LatLng(-8.101460, 112.167679);
+        LatLng malangIdn = new LatLng(-7.966620, 112.632629);
         mMap.addMarker(new MarkerOptions().position(malangIdn).title("Marker in Malang"));
         mMap.addMarker(new MarkerOptions().position(blitarIdn).title("Marker in Blitar"));
         mMap.addMarker(new MarkerOptions().position(lamonganIdn).title("Marker in Lamongan"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(malangIdn));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(blitarIdn));
+
         mMap.moveCamera(CameraUpdateFactory.newLatLng(lamonganIdn));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(blitarIdn));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(malangIdn));
+
+        mMap.setMyLocationEnabled(true);
+
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(9.0f));
+
     }
 
     @Override
