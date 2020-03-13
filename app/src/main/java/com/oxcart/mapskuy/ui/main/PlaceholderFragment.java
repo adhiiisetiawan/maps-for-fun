@@ -4,6 +4,7 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,13 +16,23 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.oxcart.mapskuy.R;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
@@ -32,7 +43,7 @@ import java.util.List;
  * A placeholder fragment containing a simple view.
  */
 public class PlaceholderFragment extends Fragment implements OnMapReadyCallback {
-
+    String url = "https://api.myjson.com/bins/zfvui";
     private static final String ARG_SECTION_NUMBER = "section_number";
 
     private PageViewModel pageViewModel;
@@ -40,6 +51,9 @@ public class PlaceholderFragment extends Fragment implements OnMapReadyCallback 
     private FragmentActivity myContext;
     private SearchView searchView;
     private View mapView;
+    private Double lat;
+    private Double longs;
+    private String city_name;
 
     public static PlaceholderFragment newInstance(int index) {
         PlaceholderFragment fragment = new PlaceholderFragment();
@@ -120,22 +134,51 @@ public class PlaceholderFragment extends Fragment implements OnMapReadyCallback 
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
-        LatLng lamonganIdn = new LatLng(-7.112340, 112.417419);
-        LatLng blitarIdn = new LatLng(-8.101460, 112.167679);
-        LatLng malangIdn = new LatLng(-7.966620, 112.632629);
-        mMap.addMarker(new MarkerOptions().position(malangIdn).title("Marker in Malang"));
-        mMap.addMarker(new MarkerOptions().position(blitarIdn).title("Marker in Blitar"));
-        mMap.addMarker(new MarkerOptions().position(lamonganIdn).title("Marker in Lamongan"));
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(lamonganIdn));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(blitarIdn));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(malangIdn));
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    JSONArray kota = response.getJSONArray("kota");
+                    for (int i = 0; i < kota.length() ; i++) {
+                        JSONObject jsonObject = kota.getJSONObject(i);
+                        lat = jsonObject.getDouble("lat");
+                        longs = jsonObject.getDouble("long");
+                        city_name = jsonObject.getString("nama_kota");
+
+                        mMap.addMarker(new MarkerOptions().position(new LatLng(lat,longs)).title(city_name).snippet("Detailed Information Here")
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE)));
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, longs),9.0f));
+                    }
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("Volley", error.toString());
+            }
+        });
+        RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
+        requestQueue.add(jsonObjectRequest);
+
+
+        // Add a marker in Sydney and move the camera
+//        LatLng lamonganIdn = new LatLng(-7.112340, 112.417419);
+//        LatLng blitarIdn = new LatLng(-8.101460, 112.167679);
+//        LatLng malangIdn = new LatLng(-7.966620, 112.632629);
+//        mMap.addMarker(new MarkerOptions().position(malangIdn).title("Marker in Malang"));
+//        mMap.addMarker(new MarkerOptions().position(blitarIdn).title("Marker in Blitar"));
+//        mMap.addMarker(new MarkerOptions().position(lamonganIdn).title("Marker in Lamongan"));
+
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(lamonganIdn));
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(blitarIdn));
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(malangIdn));
 
         mMap.setMyLocationEnabled(true);
-
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(9.0f));
-
+        mMap.getUiSettings().setZoomControlsEnabled(true);
     }
 
     @Override
